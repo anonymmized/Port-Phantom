@@ -1,0 +1,15 @@
+signatures:
+  - name: "Камера с открытым RTSP"
+    description: "Порт 554 открыт у Hikvision/Dahua → возможна уязвимость"
+    conditions:
+      manufacturer: ["Hikvision", "Dahua"]
+      ports: [554]
+    risk_level: high
+    cve: ["CVE-2023-1234", "CVE-2024-5678"]
+
+  - name: "Неизвестное устройство с HTTP"
+    description: "Устройство без определённого производителя + порт 80 открыт"
+    conditions:
+      manufacturer: ["Неизвестный производитель", "Незвестный"]
+      ports: [80, 443]
+    risk_level: medium

@@ -1,5 +1,6 @@
 import os
 import csv
+import yaml
 import time
 import json
 import requests
@@ -14,7 +15,7 @@ DEVICE_PORT_RULES = {
     "server": [22, 80, 443],
     "printer": [9100]
 }
-RISK_RULES={
+RISK_RULES = {
     'ports': {
         22: 5, # SSH - bruteforce
         80: 3, # HTTP - weak web-interface
@@ -40,8 +41,53 @@ RISK_RULES={
     }
 }
 
-def scan_network(subnet="192.168.1.0/24"):
-    found_ips = []
+def find_subnet():
+    result = subprocess.run(['ifconfig'], capture_output=True, text=True)
+    for line in result.stdout.splitlines():
+        if 'inet' in line and '127.0.0.1' not in line and 'inet6' not in line:
+            parts = line.split()
+            for item in parts:
+                if '.' in item and len(item.split('.')) == 4:
+                    try:
+                        # Проверяем, можно ли преобразовать в IP
+                        ip_parts = item.split('.')
+                        if len(ip_parts) == 4 and all(0 <= int(x) < 256 for x in ip_parts):
+                            network = ".".join(ip_parts[:3]) + ".0/24"
+                            return network
+                    except ValueError:
+                        continue
+    return "192.168.1.0/24"
+
+
+def load_signatures(filename='signatures.yaml'):
+    if not os.path.exists(filename):
+        print(f"[!] Файла {filename} не существует")
+        return []
+    
+    with open(filename, 'r', encoding='utf-8') as f:
+        try:
+            data = yaml.safe_load(f)
+            return data.get('signatures', [])
+        except yaml.YAMLError as e:
+            print(f"Ошибка при парсинга YAML: {e}")
+            return []
+
+def check_against_signatures(device, signatures):
+    matched = []
+    for sig in signatures:
+        manufacturers = sig['conditions'].get('manufacturer', [])
+        ports = list(map(int, sig['conditions'].get('ports', [])))
+
+        if manufacturers and device['manufacturer'] not in manufacturers:
+            continue
+        if ports and not any(port in ports for port in map(int, device['open ports'])):
+            continue
+        
+        matched.append(sig)
+    return matched
+
+def scan_network(subnet):
+    found_ips = [] #✅ Самому находить свою подсеть через (ifconfig -a | grep netmask) и сканировать ее
     command = subprocess.run(
         ["nmap", "-sn", "--host-timeout", "50ms", "--min-hostgroup", "20", subnet],
         capture_output=True,
@@ -99,7 +145,7 @@ def load_oui_db(filename="oui.txt"):
     return oui_dict
 
 def get_manufacturer(oui, oui_db):
-    return oui_db.get(oui, "Незвестный производитель")
+    return oui_db.get(oui, "Неизвестный производитель")
 
 def classify_by_manufacturer(manufacturer):
     if manufacturer in ROUTER_MANUFACTURER:
@@ -151,9 +197,11 @@ def classify_device(device):
     classifications += classify_by_manufacturer(manufacturer)
     classifications += classify_by_ports(open_ports)
 
-    if '80' in open_ports or '443' in open_ports:
+    if 80 in open_ports or 443 in open_ports:
         headers = get_http_headers(device["ip"])
-        classifications += classify_by_http(headers)
+        http_types = classify_by_http(headers)
+        if http_types:
+            classifications += http_types
 
     return list(set(classifications)) or ["unknown"]
 
@@ -186,12 +234,17 @@ def process_ip(ip, oui_db):
         return {
             "ip": ip,
             "mac": "Не найден",
-            "manufacturer": "Незвестный",
+            "manufacturer": "Неизвестный",
             "open ports": [],
+            "device type": ["unknown"],
+            "score": 0,
+            "level": "None"
         }
+
     open_ports = check_ports(ip)
     oui = get_oui(mac)
     manufacturer = get_manufacturer(oui, oui_db)
+
     device = {
         "ip": ip,
         "mac": mac,
@@ -202,9 +255,11 @@ def process_ip(ip, oui_db):
     device_types = classify_device(device)
     risk_score = calculate_risk_score(device)
     risk_level = get_risk_level(risk_score)
+
     device['device type'] = device_types
     device['score'] = risk_score
     device['level'] = risk_level
+
     return device
 
 def csv_reporter(device):
@@ -223,7 +278,7 @@ def csv_reporter(device):
     filename = f"{device['ip']}_device.csv"
 
     try:
-        with open(filename, 'w', newline='', encoding='utf-8') as f:
+        with open(f"history/{filename}", 'w', newline='', encoding='utf-8') as f:
             csv_writer = csv.writer(f)
             csv_writer.writerow(headers)
             csv_writer.writerow(row)
@@ -245,20 +300,103 @@ def json_reporter(device):
     }
     filename = f"{data['ip']}_device.json"
     try:
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(f"history/{filename}", 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
         print(f"[+] Отчет сохранен в: {filename}")
         return True
     except Exception as e:
         print(f"[!] Ошибка при сохранении JSON: {e}")
         return False
+    
+def save_current_scan(devices, subnet):
+    timestamp = int(time.time())
+    filename = f"history/scan_{timestamp}_{subnet.replace('/', '-')}.json"
+
+    data_to_save = {
+        'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+        'subnet': subnet,
+        'devices': devices
+    }
+
+    try:
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data_to_save, f, indent=4)
+        print(f"[+] Текущее сканирование сохранено в {filename}")
+        return data_to_save
+    except Exception as e:
+        print(f"[!] Не удалось сохранить историю: {e}")
+        return data_to_save
+
+def load_prev_scan(subnet):
+    if not os.path.exists('history'):
+        os.makedirs("history")
+
+    scans = []
+    for file in os.listdir('history'):
+        if subnet.replace('/', '-') in file and file.endswith('json'):
+            scans.append(os.path.join('history', file))
+    
+    if not scans:
+        print("[*] Предыдущих сканирований не найдено")
+        return None
+    
+    latest_file = max(scans, key=os.path.getctime)
+    try:
+        with open(latest_file, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"[!] Ошибка загрузки прошлого сканирования: {e}")
+        return None
+
+def compare_scans(current_devices, previous_data):
+    print("\n[!] Анализ изменений в сети...")
+    previous_devices = {dev['ip']: dev for dev in previous_data.get('devices', [])}
+    changes_found = False
+
+    new_devices = []
+    vanished_devices = []
+
+    current_ips = set()
+
+    for device in current_devices:
+        ip = device['ip']
+        current_ips.add(ip)
+
+        if not ip in previous_devices:
+            new_devices.append(device)
+        else:
+            prev_score = previous_devices[ip].get('score', 0)
+            curr_score = device.get('score', 0)
+            if curr_score > prev_score:
+                print(f"[!] Риск повысился у {ip}: {previous_devices[ip]['level']} → {device['level']} ({prev_score} → {curr_score})")
+                changes_found = True
+    
+    for ip in previous_devices:
+        if ip not in current_ips:
+            vanished_devices.append(previous_devices[ip])
+    
+    if new_devices:
+        print(f"[+] 🆕 Новые устройства:")
+        for dev in new_devices:
+            print(f"   IP: {dev['ip']} | Производитель: {dev['manufacturer']} | Порты: {dev['open ports']}")
+        changes_found = True
+    
+    if vanished_devices:
+        print("[+] 🗑 Исчезнувшие устройства:")
+        for dev in vanished_devices:
+            print(f"   IP: {dev['ip']} | Производитель: {dev['manufacturer']}")
+        changes_found = True
+    
+    if not changes_found:
+        print("[+] Изменений в сети не обнаружено")
+
 
 if __name__ == "__main__":
-    starting_time = time.time()
+    starting_time = time.time()  # в будущем убрать время выполнения, сейчас нужно для оптимизации
     oui_db = load_oui_db("oui.txt")
-
-    print("[+] Начинаем сканирование сети...")
-    result = scan_network("192.168.1.0/24")
+    subnet = find_subnet()
+    print("[+] Начинаем сканирование сети...")  # перевод на английский
+    result = scan_network(subnet)
 
     print(f"[+] Найдено устройств: {len(result)}")
     print("[+] Обрабатываем устройства...")
@@ -268,18 +406,51 @@ if __name__ == "__main__":
         tasks = [executor.submit(process_ip, ip, oui_db) for ip in result]
         for task in tasks:
             devices.append(task.result())
+    
+    previous_data = load_prev_scan(subnet)
+    if previous_data:
+        compare_scans(devices, previous_data)
+    
+    save_current_scan(devices, subnet)
+    signatures = load_signatures()
 
     print("\n[+] Результаты:")
     for device in devices:
-        print(f"IP: {device['ip']}")
-        print(f"MAC: {device['mac']}")
-        print(f"Manufacturer: {device['manufacturer']}")
-        print(f"Open ports: {', '.join(device['open ports']) if device['open ports'] else "None"}")
-        print(f"Device type: {device['device type']}")
-        print(f"Risk level: {device['level']} ({device['score']})")
+        matches = check_against_signatures(device, signatures)
+
+        print(f"IP: {device.get('ip', 'unknown')}")
+        print(f"MAC: {device.get('mac', 'Не найден')}")
+        print(f"Manufacturer: {device.get('manufacturer', 'Неизвестный')}")
+        print(f"Open ports: {', '.join(device.get('open ports', [])) if device.get('open ports') else 'None'}")
+        print(f"Device type: {', '.join(device.get('device type', ['unknown']))}")
+        print(f"Risk level: {device.get('level', 'None')} ({device.get('score', 0)})")
+
+        if matches:
+            print(f"[!] Устройство {device.get('ip')} совпадает с сигнатурами:")
+            for match in matches:
+                print(f"    → {match.get('name', 'No name')}")
+                print(f"      {match.get('description', 'No description')}")
+
         print("-" * 50)
-        json_reporter(device)
-        csv_reporter(device)
+                # Сохранение тревожных сообщений в отдельный файл, данные из которого будут отправляться по email/telegram
+                # if {match['risk level]} == Какой-либо тип вывода: то вызывать функцию, которая сохраняет сигнатуру
+                # Сохранять в файл вместе с документацией по каждому правилу (она будет отдельным пунктом в файле yaml по сигнатуре) например, Hikvision + 554 → возможна CVE-XXXX-XXXX
+                # Скорее всего после сборки модульной структуры и cli добавление сравнения сигнатуры с прошлым сканированием
+
+                # Функция проверки на известные CVE по типу устройства
+
+                # Интеграция с Telegram / email
+
+                # Автоматическое сканирование по расписанию
+
+                # Поддержка нескольких сетей
+
+                # Добавление белого списка
+
+                # API / Web-панель мониторинга
+
+                # Добавление проверки, если в открытых портах есть 80 или 443, то проверять по программе httpx
+    #        csv_reporter(device)
 
     ending_time = time.time()
     print(f"\n[+] Lead time: {ending_time - starting_time:.2f} seconds")
