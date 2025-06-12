@@ -510,6 +510,4 @@ if __name__ == '__main__':
     #        csv_reporter(device)
 
     ending_time = time.time()
-    console.print(f"\n[+] Lead time: {ending_time - starting_time:.2f} seconds", style=main_color)
-if __name__ == "__main__":
-    main()
+    console.print(f"\n[+] Lead time: {ending_time - starting_time:.2f} seconds", style=main_color)\

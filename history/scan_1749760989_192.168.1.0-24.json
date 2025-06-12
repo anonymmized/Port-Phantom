@@ -1,0 +1,55 @@
+{
+    "timestamp": "2025-06-12 23:43:09",
+    "subnet": "192.168.1.0/24",
+    "devices": [
+        {
+            "ip": "192.168.1.1",
+            "mac": "3C:17:10:E6:E3:F4",
+            "manufacturer": "Sagemcom Broadband SAS",
+            "open ports": [
+                "80"
+            ],
+            "device type": [
+                "router",
+                "server"
+            ],
+            "score": 3,
+            "level": "Low"
+        },
+        {
+            "ip": "192.168.1.5",
+            "mac": "3C:17:10:E6:E3:F5",
+            "manufacturer": "Sagemcom Broadband SAS",
+            "open ports": [],
+            "device type": [
+                "unknown"
+            ],
+            "score": 0,
+            "level": "None"
+        },
+        {
+            "ip": "192.168.1.16",
+            "mac": "50:DE:6:87:C2:A5",
+            "manufacturer": "\u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u044b\u0439 \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c",
+            "open ports": [],
+            "device type": [
+                "unknown"
+            ],
+            "score": 0,
+            "level": "None"
+        },
+        {
+            "ip": "192.168.1.36",
+            "mac": "FE:65:C3:CA:28:D4",
+            "manufacturer": "\u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u044b\u0439 \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c",
+            "open ports": [
+                "22"
+            ],
+            "device type": [
+                "server"
+            ],
+            "score": 5,
+            "level": "Medium"
+        }
+    ]
+}
