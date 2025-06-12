@@ -5,8 +5,10 @@ import time
 import json
 import requests
 import subprocess
+from rich.console import Console
 from concurrent.futures import ThreadPoolExecutor
-
+main_color = "#B0E0E6"
+console = Console()
 ROUTER_MANUFACTURER = ['TP-Link', 'Cisco', 'ASUS', 'Ubiquiti']
 CAMERA_MANUFACTURER = ['Hikvision', 'Dahua', 'Reolink']
 DEVICE_PORT_RULES = {
@@ -41,6 +43,61 @@ RISK_RULES = {
     }
 }
 
+def banner_print():
+    s1 =" ██▓███  ▒█████   ██▀███  ▄▄▄█████▓    ██▓███   ██░ ██  ▄▄▄      ███▄    █ ▄▄▄█████▓ ▒█████   ███▄ ▄███▓"
+    s2 ="▓██░  ██▒██▒  ██▒▓██ ▒ ██▒▓  ██▒ ▓▒   ▓██░  ██▒▓██░ ██▒▒████▄    ██ ▀█   █ ▓  ██▒ ▓▒▒██▒  ██▒▓██▒▀█▀ ██▒"
+    s3 ="▓██░ ██▓▒██░  ██▒▓██ ░▄█ ▒▒ ▓██░ ▒░   ▓██░ ██▓▒▒██▀▀██░▒██  ▀█▄ ▓██  ▀█ ██▒▒ ▓██░ ▒░▒██░  ██▒▓██    ▓██░"
+    s4 ="▒██▄█▓▒ ▒██   ██░▒██▀▀█▄  ░ ▓██▓ ░    ▒██▄█▓▒ ▒░▓█ ░██ ░██▄▄▄▄██▓██▒  ▐▌██▒░ ▓██▓ ░ ▒██   ██░▒██    ▒██ "
+    s5 ="▒██▒ ░  ░ ████▓▒░░██▓ ▒██▒  ▒██▒ ░    ▒██▒ ░  ░░▓█▒░██▓ ▓█   ▓██▒██░   ▓██░  ▒██▒ ░ ░ ████▓▒░▒██▒   ░██▒"
+    s6 ="▒▓▒░ ░  ░ ▒░▒░▒░ ░ ▒▓ ░▒▓░  ▒ ░░      ▒▓▒░ ░  ░ ▒ ░░▒░▒ ▒▒   ▓▒█░ ▒░   ▒ ▒   ▒ ░░   ░ ▒░▒░▒░ ░ ▒░   ░  ░"
+    s7 ="░▒ ░      ░ ▒ ▒░   ░▒ ░ ▒░    ░       ░▒ ░      ▒ ░▒░ ░  ▒   ▒▒ ░ ░░   ░ ▒░    ░      ░ ▒ ▒░ ░  ░      ░"
+    s8 ="░░      ░ ░ ░ ▒    ░░   ░   ░         ░░        ░  ░░ ░  ░   ▒     ░   ░ ░   ░      ░ ░ ░ ▒  ░      ░   "
+    s9 ="            ░ ░     ░                           ░  ░  ░      ░  ░        ░              ░ ░         ░   "                                                                              
+    s10 ="                      Port-Phantom v 1.0 - Network Security Scanner"
+    s11 ="             Network Security Tool for Scanning and Monitoring Local Networks"
+    s12 ="   Features:"
+    s13 ="    • Scans local networks to discover devices"
+    s14 ="    • Identifies devices by MAC address and manufacturer"
+    s15 ="    • Checks open ports and classifies device types"
+    s16 ="    • Calculates risk levels based on signatures and port configurations"
+    s17 ="    • Compares current scan with previous scans to detect changes"
+    s18 ="    • Saves results in JSON and CSV formats"
+    s19 ="    • Supports multiple subnets and historical data tracking"
+    s20 ="   Contact:"
+    s21 ="    • GitHub: https://github.com/yourusername/Port-Phantom"
+    s22 ="    • Email: yourname@example.com"
+    s23 ="                                  Disclaimer:"
+    s24 ="              This tool is for educational purposes only. Use responsibly."
+    s25 ="                          © 2025 Port-Phantom Team"
+    console.print(s1, style="#48D1CC")
+    console.print(s2, style="#48D1CC")
+    console.print(s3, style="#48D1CC")
+    console.print(s4, style="#48D1CC")
+    console.print(s5, style="#40E0D0")
+    console.print(s6, style="#40E0D0")
+    console.print(s7, style="#5F9EA0")
+    console.print(s8, style="#5F9EA0")
+    console.print(s9, style="#5F9EA0")
+
+    console.print(f'[italic][bold]{s10}[/bold][/italic]', style="#7B68EE")
+    console.print(f'[italic][bold]{s11}[/bold][/italic]', style="#7B68EE")
+    console.print(f'[italic][bold]{s12}[/bold][/italic]', style="#1E90FF")
+    console.print(f'[italic]{s13}[/italic]', style="#6495ED")
+    console.print(f'[italic]{s14}[/italic]', style="#6495ED")
+    console.print(f'[italic]{s15}[/italic]', style="#6495ED")
+    console.print(f'[italic]{s16}[/italic]', style="#6495ED")
+    console.print(f'[italic]{s17}[/italic]', style="#6495ED")
+    console.print(f'[italic]{s18}[/italic]', style="#6495ED")
+    console.print(f'[italic]{s19}[/italic]', style="#6495ED")
+    console.print(f'[italic][bold]{s20}[/bold][/italic]', style="#1E90FF")
+    console.print(f'[italic]{s21}[/italic]', style="#6495ED")
+    console.print(f'[italic]{s22}[/italic]', style="#6495ED")
+    console.print(f'[italic][bold]{s23}[/bold][/italic]', style="#7B68EE")
+    console.print(f'[italic][bold]{s24}[/bold][/italic]', style="#7B68EE")
+    console.print(f'[italic][bold]{s25}[/bold][/italic]', style="#7B68EE")
+
+    return 0
+
 def find_subnet():
     result = subprocess.run(['ifconfig'], capture_output=True, text=True)
     for line in result.stdout.splitlines():
@@ -49,7 +106,6 @@ def find_subnet():
             for item in parts:
                 if '.' in item and len(item.split('.')) == 4:
                     try:
-                        # Проверяем, можно ли преобразовать в IP
                         ip_parts = item.split('.')
                         if len(ip_parts) == 4 and all(0 <= int(x) < 256 for x in ip_parts):
                             network = ".".join(ip_parts[:3]) + ".0/24"
@@ -61,7 +117,7 @@ def find_subnet():
 
 def load_signatures(filename='signatures.yaml'):
     if not os.path.exists(filename):
-        print(f"[!] Файла {filename} не существует")
+        console.print(f"[!] Файла {filename} не существует", style=main_color)
         return []
     
     with open(filename, 'r', encoding='utf-8') as f:
@@ -69,7 +125,7 @@ def load_signatures(filename='signatures.yaml'):
             data = yaml.safe_load(f)
             return data.get('signatures', [])
         except yaml.YAMLError as e:
-            print(f"Ошибка при парсинга YAML: {e}")
+            console.print(f"Ошибка при парсинга YAML: {e}", style=main_color)
             return []
 
 def check_against_signatures(device, signatures):
@@ -139,9 +195,9 @@ def load_oui_db(filename="oui.txt"):
                         manufacturer = ' '.join(parts[3:])
                         oui_dict[oui] = manufacturer
         else:
-            print(f"[!] Файл {filename} не найден")
+            console.print(f"[!] Файл {filename} не найден", style=main_color)
     except Exception as e:
-        print(f"[!] Ошибка загрузки базы: {e}")
+        console.print(f"[!] Ошибка загрузки базы: {e}", style=main_color)
     return oui_dict
 
 def get_manufacturer(oui, oui_db):
@@ -282,10 +338,10 @@ def csv_reporter(device):
             csv_writer = csv.writer(f)
             csv_writer.writerow(headers)
             csv_writer.writerow(row)
-        print(f"[+] Отчёт сохранён в: {filename}")
+        console.print(f"[+] Отчёт сохранён в: {filename}", style=main_color)
         return True
     except Exception as e:
-        print(f"[!] Ошибка при сохранении CSV: {e}")
+        console.print(f"[!] Ошибка при сохранении CSV: {e}", style=main_color)
         return False
 
 def json_reporter(device):
@@ -302,10 +358,10 @@ def json_reporter(device):
     try:
         with open(f"history/{filename}", 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
-        print(f"[+] Отчет сохранен в: {filename}")
+        console.print(f"[+] Отчет сохранен в: {filename}", style=main_color)
         return True
     except Exception as e:
-        print(f"[!] Ошибка при сохранении JSON: {e}")
+        console.print(f"[!] Ошибка при сохранении JSON: {e}", style=main_color)
         return False
     
 def save_current_scan(devices, subnet):
@@ -321,10 +377,10 @@ def save_current_scan(devices, subnet):
     try:
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data_to_save, f, indent=4)
-        print(f"[+] Текущее сканирование сохранено в {filename}")
+        console.print(f"[+] Текущее сканирование сохранено в {filename}", style=main_color)
         return data_to_save
     except Exception as e:
-        print(f"[!] Не удалось сохранить историю: {e}")
+        console.print(f"[!] Не удалось сохранить историю: {e}", style=main_color)
         return data_to_save
 
 def load_prev_scan(subnet):
@@ -337,7 +393,7 @@ def load_prev_scan(subnet):
             scans.append(os.path.join('history', file))
     
     if not scans:
-        print("[*] Предыдущих сканирований не найдено")
+        console.print("[*] Предыдущих сканирований не найдено", style=main_color)
         return None
     
     latest_file = max(scans, key=os.path.getctime)
@@ -345,11 +401,11 @@ def load_prev_scan(subnet):
         with open(latest_file, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
-        print(f"[!] Ошибка загрузки прошлого сканирования: {e}")
+        console.print(f"[!] Ошибка загрузки прошлого сканирования: {e}", style=main_color)
         return None
 
 def compare_scans(current_devices, previous_data):
-    print("\n[!] Анализ изменений в сети...")
+    console.print("\n[!] Анализ изменений в сети...", style=main_color)
     previous_devices = {dev['ip']: dev for dev in previous_data.get('devices', [])}
     changes_found = False
 
@@ -368,7 +424,7 @@ def compare_scans(current_devices, previous_data):
             prev_score = previous_devices[ip].get('score', 0)
             curr_score = device.get('score', 0)
             if curr_score > prev_score:
-                print(f"[!] Риск повысился у {ip}: {previous_devices[ip]['level']} → {device['level']} ({prev_score} → {curr_score})")
+                console.print(f"[!] Риск повысился у {ip}: {previous_devices[ip]['level']} → {device['level']} ({prev_score} → {curr_score})", style=main_color)
                 changes_found = True
     
     for ip in previous_devices:
@@ -376,30 +432,31 @@ def compare_scans(current_devices, previous_data):
             vanished_devices.append(previous_devices[ip])
     
     if new_devices:
-        print(f"[+] 🆕 Новые устройства:")
+        console.print(f"[+] 🆕 Новые устройства:", style=main_color)
         for dev in new_devices:
-            print(f"   IP: {dev['ip']} | Производитель: {dev['manufacturer']} | Порты: {dev['open ports']}")
+            console.print(f"   IP: {dev['ip']} | Производитель: {dev['manufacturer']} | Порты: {dev['open ports']}", style=main_color)
         changes_found = True
     
     if vanished_devices:
-        print("[+] 🗑 Исчезнувшие устройства:")
+        console.print("[+] 🗑 Исчезнувшие устройства:", style=main_color)
         for dev in vanished_devices:
-            print(f"   IP: {dev['ip']} | Производитель: {dev['manufacturer']}")
+            console.print(f"   IP: {dev['ip']} | Производитель: {dev['manufacturer']}", style=main_color)
         changes_found = True
     
     if not changes_found:
-        print("[+] Изменений в сети не обнаружено")
+        console.print("[+] Изменений в сети не обнаружено", style=main_color)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    banner_print()
     starting_time = time.time()  # в будущем убрать время выполнения, сейчас нужно для оптимизации
     oui_db = load_oui_db("oui.txt")
     subnet = find_subnet()
-    print("[+] Начинаем сканирование сети...")  # перевод на английский
+    console.print("\n[+] Начинаем сканирование сети...", style=main_color)  # перевод на английский
     result = scan_network(subnet)
 
-    print(f"[+] Найдено устройств: {len(result)}")
-    print("[+] Обрабатываем устройства...")
+    console.print(f"[+] Найдено устройств: {len(result)}", style=main_color)
+    console.print("[+] Обрабатываем устройства...", style=main_color)
 
     devices = []
     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -414,31 +471,31 @@ if __name__ == "__main__":
     save_current_scan(devices, subnet)
     signatures = load_signatures()
 
-    print("\n[+] Результаты:")
+    console.print("\n[+] Результаты:", style=main_color)
     for device in devices:
         matches = check_against_signatures(device, signatures)
 
-        print(f"IP: {device.get('ip', 'unknown')}")
-        print(f"MAC: {device.get('mac', 'Не найден')}")
-        print(f"Manufacturer: {device.get('manufacturer', 'Неизвестный')}")
-        print(f"Open ports: {', '.join(device.get('open ports', [])) if device.get('open ports') else 'None'}")
-        print(f"Device type: {', '.join(device.get('device type', ['unknown']))}")
-        print(f"Risk level: {device.get('level', 'None')} ({device.get('score', 0)})")
+        console.print(f"IP: {device.get('ip', 'unknown')}", style=main_color)
+        console.print(f"MAC: {device.get('mac', 'Не найден')}", style=main_color)
+        console.print(f"Manufacturer: {device.get('manufacturer', 'Неизвестный')}", style=main_color)
+        console.print(f"Open ports: {', '.join(device.get('open ports', [])) if device.get('open ports') else 'None'}", style=main_color)
+        console.print(f"Device type: {', '.join(device.get('device type', ['unknown']))}", style=main_color)
+        console.print(f"Risk level: {device.get('level', 'None')} ({device.get('score', 0)})", style=main_color)
 
         if matches:
-            print(f"[!] Устройство {device.get('ip')} совпадает с сигнатурами:")
+            console.print(f"[!] Устройство {device.get('ip')} совпадает с сигнатурами:", style=main_color)
             for match in matches:
-                print(f"    → {match.get('name', 'No name')}")
-                print(f"      {match.get('description', 'No description')}")
+                console.print(f"    → {match.get('name', 'No name')}", style=main_color)
+                console.print(f"      {match.get('description', 'No description')}", style=main_color)
 
-        print("-" * 50)
+        console.print("-" * 50, style=main_color)
                 # Сохранение тревожных сообщений в отдельный файл, данные из которого будут отправляться по email/telegram
                 # if {match['risk level]} == Какой-либо тип вывода: то вызывать функцию, которая сохраняет сигнатуру
                 # Сохранять в файл вместе с документацией по каждому правилу (она будет отдельным пунктом в файле yaml по сигнатуре) например, Hikvision + 554 → возможна CVE-XXXX-XXXX
                 # Скорее всего после сборки модульной структуры и cli добавление сравнения сигнатуры с прошлым сканированием
 
                 # Функция проверки на известные CVE по типу устройства
-
+ 
                 # Интеграция с Telegram / email
 
                 # Автоматическое сканирование по расписанию
@@ -453,4 +510,6 @@ if __name__ == "__main__":
     #        csv_reporter(device)
 
     ending_time = time.time()
-    print(f"\n[+] Lead time: {ending_time - starting_time:.2f} seconds")
+    console.print(f"\n[+] Lead time: {ending_time - starting_time:.2f} seconds", style=main_color)
+if __name__ == "__main__":
+    main()
