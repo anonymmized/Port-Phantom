@@ -3,11 +3,14 @@ import csv
 import yaml
 import time
 import json
+import telebot
 import requests
 import subprocess
-from rich.console import Console
 from concurrent.futures import ThreadPoolExecutor
+from rich.console import Console
 main_color = "#B0E0E6"
+TELEGRAM_BOT_TOKEN = "7840082685:AAEKTFSUjMa9CoXaNhBn9t8ONHAH_hJCQqo"
+AUTHORIZED_USER_ID = 815330161
 console = Console()
 ROUTER_MANUFACTURER = ['TP-Link', 'Cisco', 'ASUS', 'Ubiquiti']
 CAMERA_MANUFACTURER = ['Hikvision', 'Dahua', 'Reolink']
@@ -143,7 +146,7 @@ def check_against_signatures(device, signatures):
     return matched
 
 def scan_network(subnet):
-    found_ips = [] #✅ Самому находить свою подсеть через (ifconfig -a | grep netmask) и сканировать ее
+    found_ips = []
     command = subprocess.run(
         ["nmap", "-sn", "--host-timeout", "50ms", "--min-hostgroup", "20", subnet],
         capture_output=True,
@@ -446,13 +449,73 @@ def compare_scans(current_devices, previous_data):
     if not changes_found:
         console.print("[+] Изменений в сети не обнаружено", style=main_color)
 
+def reporter(for_report, timestamp, user_id):
+    if not os.path.exists('exportable_reports'):
+        os.makedirs('exportable_reports')
+
+    filename = f"exportable_reports/scan_{timestamp}.json"
+
+    try:
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(for_report, f, ensure_ascii=False, indent=4)
+        console.print("[+] Экспортируемый отчет сохранен")
+        send_telegram_file(filename, user_id)
+        return True
+    except Exception as e:
+        console.print(f"[!] Ошибка при создании экспортируемого отчета: {e}")
+        return False
+
+def get_user_id():
+    if os.path.exists('.env'):
+        a = input(f"Ваш ID: {open('.env').readline()} [Y/n]: ")
+        if a == 'Y' or a == 'y':
+            user_id = open('.env').readline()
+            return True
+        elif a == 'n' or a == 'N':
+            os.remove('.env')
+            user_id = input("Введите ваш ID: ")
+            with open('.env', 'w', encoding='utf-8') as f:
+                f.write(user_id)
+                return True
+        else:
+            console.print("Неверный параметр", style="red")
+    elif not os.path.exists('.env'):
+        user_idd = input("Введите ваш ID: ")
+        with open('.env', 'w', encoding='utf-8') as f:
+            f.write(user_idd)
+            return True
+    else:
+        console.print("Возникла проблема поиска файла", style='red')
+        return False
+        
+def send_telegram_file(file_path, chat_id):
+    if not os.path.exists(file_path):
+        console.print(f"[!] Файл {file_path} не найден", style=main_color)
+        return False
+
+    try:
+        bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+        with open(file_path, 'rb') as f:
+            bot.send_document(chat_id, f)
+        console.print("[+] Файл успешно отправлен через Telegram", style=main_color)
+        return True
+    except Exception as e:
+        console.print(f"[!] Ошибка при отправке через Telegram: {e}", style=main_color)
+        return False
 
 if __name__ == '__main__':
     banner_print()
-    starting_time = time.time()  # в будущем убрать время выполнения, сейчас нужно для оптимизации
+    console.print('Проверка user ID...', style=main_color)
+    if os.path.exists('.env'):
+        user_id = open('.env').readline()
+    elif not os.path.exists('.env'):
+        get_user_id()
+        user_id = open('.env').readline()
+
+    starting_time = time.time()  #TODO: в будущем убрать время выполнения, сейчас нужно для оптимизации
     oui_db = load_oui_db("oui.txt")
     subnet = find_subnet()
-    console.print("\n[+] Начинаем сканирование сети...", style=main_color)  # перевод на английский
+    console.print("\n[+] Начинаем сканирование сети...", style=main_color)  #TODO: перевод на английский
     result = scan_network(subnet)
 
     console.print(f"[+] Найдено устройств: {len(result)}", style=main_color)
@@ -470,7 +533,8 @@ if __name__ == '__main__':
     
     save_current_scan(devices, subnet)
     signatures = load_signatures()
-
+    frep = []
+    timestamp = int(time.time())
     console.print("\n[+] Результаты:", style=main_color)
     for device in devices:
         matches = check_against_signatures(device, signatures)
@@ -481,7 +545,16 @@ if __name__ == '__main__':
         console.print(f"Open ports: {', '.join(device.get('open ports', [])) if device.get('open ports') else 'None'}", style=main_color)
         console.print(f"Device type: {', '.join(device.get('device type', ['unknown']))}", style=main_color)
         console.print(f"Risk level: {device.get('level', 'None')} ({device.get('score', 0)})", style=main_color)
-
+        data = {
+        "ip": device['ip'],
+        "mac": device['mac'],
+        "manufacturer": device['manufacturer'],
+        "open_ports": device['open ports'],
+        "device_type": device['device type'],
+        "score": device['score'],
+        "level": device['level'],
+        }
+        frep.append(data)
         if matches:
             console.print(f"[!] Устройство {device.get('ip')} совпадает с сигнатурами:", style=main_color)
             for match in matches:
@@ -489,25 +562,18 @@ if __name__ == '__main__':
                 console.print(f"      {match.get('description', 'No description')}", style=main_color)
 
         console.print("-" * 50, style=main_color)
-                # Сохранение тревожных сообщений в отдельный файл, данные из которого будут отправляться по email/telegram
-                # if {match['risk level]} == Какой-либо тип вывода: то вызывать функцию, которая сохраняет сигнатуру
-                # Сохранять в файл вместе с документацией по каждому правилу (она будет отдельным пунктом в файле yaml по сигнатуре) например, Hikvision + 554 → возможна CVE-XXXX-XXXX
-                # Скорее всего после сборки модульной структуры и cli добавление сравнения сигнатуры с прошлым сканированием
+                #TODO: Сохранять в файл вместе с документацией по каждому правилу (она будет отдельным пунктом в файле yaml по сигнатуре) например, Hikvision + 554 → возможна CVE-XXXX-XXXX
+                #TODO: Скорее всего после сборки модульной структуры и cli добавление сравнения сигнатуры с прошлым сканированием
 
-                # Функция проверки на известные CVE по типу устройства
- 
-                # Интеграция с Telegram / email
+                #TODO: Функция проверки на известные CVE по типу устройства
 
-                # Автоматическое сканирование по расписанию
+                #TODO: Автоматическое сканирование по расписанию
 
-                # Поддержка нескольких сетей
+                #TODO: Поддержка нескольких сетей
 
-                # Добавление белого списка
+                #TODO: Добавление белого списка
 
-                # API / Web-панель мониторинга
-
-                # Добавление проверки, если в открытых портах есть 80 или 443, то проверять по программе httpx
-    #        csv_reporter(device)
-
+                #TODO: API / Web-панель мониторинга
+    reporter(frep, timestamp, user_id)
     ending_time = time.time()
-    console.print(f"\n[+] Lead time: {ending_time - starting_time:.2f} seconds", style=main_color)\
+    console.print(f"\n[+] Lead time: {ending_time - starting_time:.2f} seconds", style=main_color)
