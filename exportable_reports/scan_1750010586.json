@@ -1,0 +1,128 @@
+[
+    {
+        "ip": "(192.168.88.1)",
+        "mac": "Не найден",
+        "manufacturer": "Неизвестный",
+        "open_ports": [],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    },
+    {
+        "ip": "192.168.88.18",
+        "mac": "9E:EF:F6:8F:CC:46",
+        "manufacturer": "Неизвестный производитель",
+        "open_ports": [
+            "22"
+        ],
+        "device_type": [
+            "server"
+        ],
+        "score": 5,
+        "level": "Medium"
+    },
+    {
+        "ip": "192.168.88.22",
+        "mac": "78:FB:D8:86:69:40",
+        "manufacturer": "Apple, Inc.",
+        "open_ports": [],
+        "device_type": [
+            "smartphone",
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    },
+    {
+        "ip": "192.168.88.27",
+        "mac": "B0:4A:39:A7:15:A5",
+        "manufacturer": "Beijing Roborock Technology Co., Ltd.",
+        "open_ports": [],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    },
+    {
+        "ip": "192.168.88.29",
+        "mac": "B0:2:47:3D:FC:24",
+        "manufacturer": "Неизвестный производитель",
+        "open_ports": [
+            "8080"
+        ],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 3,
+        "level": "Low"
+    },
+    {
+        "ip": "192.168.88.30",
+        "mac": "FC:3C:D7:8D:D9:31",
+        "manufacturer": "Tuya Smart Inc.",
+        "open_ports": [],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    },
+    {
+        "ip": "192.168.88.31",
+        "mac": "FC:3C:D7:8D:D9:9B",
+        "manufacturer": "Tuya Smart Inc.",
+        "open_ports": [],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    },
+    {
+        "ip": "192.168.88.32",
+        "mac": "B8:6:D:6:7B:2D",
+        "manufacturer": "Неизвестный производитель",
+        "open_ports": [],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    },
+    {
+        "ip": "192.168.88.33",
+        "mac": "FC:3C:D7:8D:E5:39",
+        "manufacturer": "Tuya Smart Inc.",
+        "open_ports": [],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    },
+    {
+        "ip": "192.168.88.201",
+        "mac": "D4:86:60:F:2:90",
+        "manufacturer": "Arcadyan Corporation",
+        "open_ports": [],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    },
+    {
+        "ip": "192.168.88.246",
+        "mac": "74:E6:B8:6:DC:85",
+        "manufacturer": "LG Electronics",
+        "open_ports": [],
+        "device_type": [
+            "unknown"
+        ],
+        "score": 0,
+        "level": "None"
+    }
+]

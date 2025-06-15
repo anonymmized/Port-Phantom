@@ -1,0 +1,52 @@
+signatures:
+  - name: "Hikvision Camera"
+    description: "Hikvision IP camera with RTSP port open"
+    conditions:
+      manufacturer: ["Hikvision"]
+      ports: [554]
+    risk_level: "High"
+    cve_info: "CVE-2017-7921, CVE-2019-11219"
+    
+  - name: "Dahua Camera"
+    description: "Dahua IP camera with RTSP port open"
+    conditions:
+      manufacturer: ["Dahua"]
+      ports: [554]
+    risk_level: "High"
+    cve_info: "CVE-2018-5767, CVE-2019-10866"
+    
+  - name: "TP-Link Router"
+    description: "TP-Link router with web interface"
+    conditions:
+      manufacturer: ["TP-Link"]
+      ports: [80, 443]
+    risk_level: "Medium"
+    cve_info: "CVE-2020-10882, CVE-2021-31758"
+    
+  - name: "SSH Server"
+    description: "Device with SSH port open"
+    conditions:
+      ports: [22]
+    risk_level: "Medium"
+    cve_info: "Multiple SSH vulnerabilities possible"
+    
+  - name: "Telnet Service"
+    description: "Device with Telnet port open (insecure)"
+    conditions:
+      ports: [23]
+    risk_level: "High"
+    cve_info: "Telnet is inherently insecure - no encryption"
+    
+  - name: "FTP Server"
+    description: "Device with FTP port open"
+    conditions:
+      ports: [21]
+    risk_level: "Medium"
+    cve_info: "CVE-2020-1934, CVE-2019-12815"
+    
+  - name: "Printer with JetDirect"
+    description: "HP printer with JetDirect port open"
+    conditions:
+      ports: [9100]
+    risk_level: "Low"
+    cve_info: "CVE-2017-2744, CVE-2018-5924"

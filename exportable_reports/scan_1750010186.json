@@ -1,0 +1,15 @@
+[
+    {
+        "ip": "172.20.10.4",
+        "mac": "12:54:E9:85:91:A6",
+        "manufacturer": "Неизвестный производитель",
+        "open_ports": [
+            "22"
+        ],
+        "device_type": [
+            "server"
+        ],
+        "score": 5,
+        "level": "Medium"
+    }
+]
