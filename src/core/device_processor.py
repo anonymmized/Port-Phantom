@@ -2,38 +2,46 @@
 Device processing and information gathering
 """
 
-from typing import Dict, Any, List
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 
-from ..config.settings import settings
-from ..scanners.network_scanner import NetworkScanner
-from ..scanners.port_scanner import PortScanner
-from ..scanners.mac_scanner import MACScanner
-from ..classifiers.device_classifier import DeviceClassifier
-from .risk_assessor import RiskAssessor
+from ..config.settings import MAIN_COLOR
+from ..scanners.network_scanner import scan_network
+from ..scanners.port_scanner import check_ports
+from ..scanners.mac_scanner import get_mac_address, get_oui, get_manufacturer
+from ..classifiers.device_classifier import classify_device
+from .risk_assessor import assess_device_risk
 
 console = Console()
 
 
-class DeviceProcessor:
-    """Process and analyze devices"""
-    
-    def __init__(self, oui_db: Dict[str, str]):
-        self.oui_db = oui_db
-    
-    def process_ip(self, ip: str) -> Dict[str, Any]:
-        """Process a single IP address"""
+def create_empty_device(ip):
+    """Create empty device when MAC is not found"""
+    return {
+        "ip": ip,
+        "mac": "Not found",
+        "manufacturer": "Unknown",
+        "open ports": [],
+        "device type": ["unknown"],
+        "score": 0,
+        "level": "None"
+    }
+
+
+def process_ip(ip, oui_db, ports=None):
+    """Process a single IP address"""
+    try:
         # Get MAC address
-        mac = MACScanner.get_mac_address(ip)
+        mac = get_mac_address(ip)
         if not mac:
-            return self._create_empty_device(ip)
+            return create_empty_device(ip)
         
         # Get open ports
-        open_ports = PortScanner.check_ports(ip)
+        open_ports = check_ports(ip, ports)
         
         # Get manufacturer
-        oui = MACScanner.get_oui(mac)
-        manufacturer = MACScanner.get_manufacturer(oui, self.oui_db)
+        oui = get_oui(mac)
+        manufacturer = get_manufacturer(oui, oui_db)
         
         # Create device object
         device = {
@@ -44,41 +52,50 @@ class DeviceProcessor:
         }
         
         # Classify device
-        device_types = DeviceClassifier.classify_device(device)
+        device_types = classify_device(device)
         device['device type'] = device_types
         
         # Assess risk
-        device = RiskAssessor.assess_device_risk(device)
+        device = assess_device_risk(device)
         
         return device
+        
+    except Exception as e:
+        console.print(f":x: [bold red]Error processing {ip}:[/bold red] {e}", style=MAIN_COLOR)
+        return create_empty_device(ip)
+
+
+def process_network(subnet, oui_db, ports=None):
+    """Process entire network"""
+    # Find active hosts
+    active_ips = scan_network(subnet)
     
-    def _create_empty_device(self, ip: str) -> Dict[str, Any]:
-        """Create empty device when MAC is not found"""
-        return {
-            "ip": ip,
-            "mac": "Не найден",
-            "manufacturer": "Неизвестный",
-            "open ports": [],
-            "device type": ["unknown"],
-            "score": 0,
-            "level": "None"
-        }
+    if not active_ips:
+        console.print(":x: [bold red]No active devices found[/bold red]", style=MAIN_COLOR)
+        return []
     
-    def process_network(self, subnet: str) -> List[Dict[str, Any]]:
-        """Process entire network"""
-        # Find active hosts
-        active_ips = NetworkScanner.scan_network(subnet)
+    console.print(f":gear: [bold green]Processing {len(active_ips)} devices...[/bold green]", style=MAIN_COLOR)
+    
+    # Process each device with progress bar
+    devices = []
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        console=console
+    ) as progress:
         
-        if not active_ips:
-            console.print("[!] Не найдено активных устройств", style=settings.MAIN_COLOR)
-            return []
+        task = progress.add_task("Processing devices...", total=len(active_ips))
         
-        console.print(f"[+] Обрабатываем {len(active_ips)} устройств...", style=settings.MAIN_COLOR)
-        
-        # Process each device
-        devices = []
         for ip in active_ips:
-            device = self.process_ip(ip)
+            device = process_ip(ip, oui_db, ports)
             devices.append(device)
-        
-        return devices 
+            progress.update(task, advance=1)
+    
+    # Filter out devices with errors
+    valid_devices = [d for d in devices if d.get('mac') != 'Not found']
+    if len(valid_devices) != len(devices):
+        console.print(f":warning: [yellow]Processed {len(devices)} devices, {len(valid_devices)} with valid data[/yellow]", style=MAIN_COLOR)
+    
+    return devices 

@@ -1,34 +1,77 @@
 signatures:
+  # Camera signatures
   - name: "Hikvision Camera"
     description: "Hikvision IP camera with RTSP port open"
     conditions:
       manufacturer: ["Hikvision"]
-      ports: [554]
+      ports: [554, 37777, 37778, 37779]
     risk_level: "High"
-    cve_info: "CVE-2017-7921, CVE-2019-11219"
+    cve_info: "CVE-2017-7921, CVE-2019-11219, CVE-2020-25078"
     
   - name: "Dahua Camera"
     description: "Dahua IP camera with RTSP port open"
     conditions:
       manufacturer: ["Dahua"]
-      ports: [554]
+      ports: [554, 37777, 37778, 37779]
     risk_level: "High"
-    cve_info: "CVE-2018-5767, CVE-2019-10866"
+    cve_info: "CVE-2018-5767, CVE-2019-10866, CVE-2021-33044"
     
+  - name: "Axis Camera"
+    description: "Axis IP camera with RTSP port open"
+    conditions:
+      manufacturer: ["Axis"]
+      ports: [554, 80, 443]
+    risk_level: "Medium"
+    cve_info: "CVE-2018-10660, CVE-2019-11347"
+    
+  - name: "Generic IP Camera"
+    description: "Generic IP camera with RTSP streaming"
+    conditions:
+      ports: [554]
+      device_type: ["camera"]
+    risk_level: "Medium"
+    cve_info: "Multiple camera vulnerabilities possible"
+    
+  # Router signatures
   - name: "TP-Link Router"
     description: "TP-Link router with web interface"
     conditions:
       manufacturer: ["TP-Link"]
+      ports: [80, 443, 8080]
+    risk_level: "Medium"
+    cve_info: "CVE-2020-10882, CVE-2021-31758, CVE-2022-24355"
+    
+  - name: "Netgear Router"
+    description: "Netgear router with web interface"
+    conditions:
+      manufacturer: ["Netgear"]
+      ports: [80, 443, 8080]
+    risk_level: "Medium"
+    cve_info: "CVE-2017-5521, CVE-2019-14513, CVE-2020-10987"
+    
+  - name: "ASUS Router"
+    description: "ASUS router with web interface"
+    conditions:
+      manufacturer: ["ASUS"]
+      ports: [80, 443, 8080]
+    risk_level: "Medium"
+    cve_info: "CVE-2019-11063, CVE-2020-12695"
+    
+  - name: "Generic Router"
+    description: "Generic router with web interface"
+    conditions:
+      device_type: ["router"]
       ports: [80, 443]
     risk_level: "Medium"
-    cve_info: "CVE-2020-10882, CVE-2021-31758"
+    cve_info: "Router-specific vulnerabilities possible"
     
+  # Server signatures
   - name: "SSH Server"
     description: "Device with SSH port open"
     conditions:
       ports: [22]
     risk_level: "Medium"
-    cve_info: "Multiple SSH vulnerabilities possible"
+    cve_info: "CVE-2018-15473, CVE-2019-6111, CVE-2020-15778"
     
   - name: "Telnet Service"
     description: "Device with Telnet port open (insecure)"
@@ -42,11 +85,179 @@ signatures:
     conditions:
       ports: [21]
     risk_level: "Medium"
+    cve_info: "CVE-2020-1934, CVE-2019-12815, CVE-2021-22204"
+    
+  - name: "RDP Server"
+    description: "Device with Remote Desktop port open"
+    conditions:
+      ports: [3389]
+    risk_level: "High"
+    cve_info: "CVE-2019-0708 (BlueKeep), CVE-2019-1181, CVE-2019-1182"
+    
+  - name: "VNC Server"
+    description: "Device with VNC port open"
+    conditions:
+      ports: [5900]
+    risk_level: "Medium"
+    cve_info: "CVE-2018-6311, CVE-2019-15694"
+    
+  # Database signatures
+  - name: "MySQL Database"
+    description: "MySQL database server"
+    conditions:
+      ports: [3306]
+    risk_level: "High"
+    cve_info: "CVE-2020-14812, CVE-2021-2152, CVE-2022-2158"
+    
+  - name: "PostgreSQL Database"
+    description: "PostgreSQL database server"
+    conditions:
+      ports: [5432]
+    risk_level: "High"
+    cve_info: "CVE-2020-25694, CVE-2021-3393, CVE-2022-1552"
+    
+  - name: "MongoDB Database"
+    description: "MongoDB NoSQL database"
+    conditions:
+      ports: [27017]
+    risk_level: "Medium"
+    cve_info: "CVE-2019-2398, CVE-2020-7928, CVE-2021-20330"
+    
+  - name: "Redis Database"
+    description: "Redis in-memory database"
+    conditions:
+      ports: [6379]
+    risk_level: "Medium"
+    cve_info: "CVE-2019-10192, CVE-2020-14147, CVE-2021-32761"
+    
+  # IoT signatures
+  - name: "MQTT Broker"
+    description: "MQTT message broker for IoT"
+    conditions:
+      ports: [1883, 8883]
+    risk_level: "Medium"
+    cve_info: "CVE-2017-7650, CVE-2019-11779, CVE-2020-13849"
+    
+  - name: "CoAP Server"
+    description: "Constrained Application Protocol server"
+    conditions:
+      ports: [5683, 5684]
+    risk_level: "Low"
+    cve_info: "CVE-2019-9750, CVE-2020-13543"
+    
+  - name: "SNMP Service"
+    description: "Simple Network Management Protocol"
+    conditions:
+      ports: [161, 162]
+    risk_level: "Medium"
+    cve_info: "CVE-2018-18066, CVE-2019-11687, CVE-2020-13561"
+    
+  # Network services
+  - name: "DNS Server"
+    description: "Domain Name System server"
+    conditions:
+      ports: [53]
+    risk_level: "Low"
+    cve_info: "CVE-2020-1350 (SIGRed), CVE-2021-25220"
+    
+  - name: "DHCP Server"
+    description: "Dynamic Host Configuration Protocol server"
+    conditions:
+      ports: [67, 68]
+    risk_level: "Low"
+    cve_info: "CVE-2018-1111, CVE-2019-6336"
+    
+  - name: "NTP Server"
+    description: "Network Time Protocol server"
+    conditions:
+      ports: [123]
+    risk_level: "Low"
+    cve_info: "CVE-2015-7871, CVE-2016-7431, CVE-2018-7184"
+    
+  # File sharing
+  - name: "SMB File Server"
+    description: "SMB/CIFS file sharing service"
+    conditions:
+      ports: [139, 445]
+    risk_level: "Medium"
+    cve_info: "CVE-2017-0143 (EternalBlue), CVE-2020-0796 (SMBGhost)"
+    
+  - name: "FTP File Server"
+    description: "FTP file transfer service"
+    conditions:
+      ports: [21]
+    risk_level: "Medium"
     cve_info: "CVE-2020-1934, CVE-2019-12815"
     
-  - name: "Printer with JetDirect"
+  # Printing
+  - name: "HP Printer with JetDirect"
     description: "HP printer with JetDirect port open"
     conditions:
       ports: [9100]
     risk_level: "Low"
-    cve_info: "CVE-2017-2744, CVE-2018-5924"
+    cve_info: "CVE-2017-2744, CVE-2018-5924, CVE-2021-3438"
+    
+  - name: "Network Printer"
+    description: "Generic network printer"
+    conditions:
+      device_type: ["printer"]
+      ports: [9100, 515, 631]
+    risk_level: "Low"
+    cve_info: "Printer-specific vulnerabilities possible"
+    
+  # Web services
+  - name: "Web Server"
+    description: "Generic web server"
+    conditions:
+      ports: [80, 443, 8080, 8443]
+    risk_level: "Medium"
+    cve_info: "Multiple web server vulnerabilities possible"
+    
+  - name: "IoT Web Interface"
+    description: "IoT device with web interface"
+    conditions:
+      device_type: ["iot"]
+      ports: [80, 443, 8080, 8443]
+    risk_level: "Medium"
+    cve_info: "IoT device vulnerabilities possible"
+    
+  # Media devices
+  - name: "Smart TV"
+    description: "Smart TV with network connectivity"
+    conditions:
+      device_type: ["tv", "media-device"]
+      ports: [80, 443, 8008, 8009]
+    risk_level: "Low"
+    cve_info: "TV-specific vulnerabilities possible"
+    
+  - name: "Media Streaming Device"
+    description: "Media streaming device (Chromecast, Roku, etc.)"
+    conditions:
+      ports: [8008, 8009, 8000]
+    risk_level: "Low"
+    cve_info: "Streaming device vulnerabilities possible"
+    
+  # High-risk combinations
+  - name: "High-Risk Camera Setup"
+    description: "Camera with multiple high-risk ports"
+    conditions:
+      device_type: ["camera"]
+      ports: [554, 80, 443, 22]
+    risk_level: "Critical"
+    cve_info: "Multiple attack vectors possible"
+    
+  - name: "Router with Remote Access"
+    description: "Router with remote access enabled"
+    conditions:
+      device_type: ["router"]
+      ports: [22, 23, 3389]
+    risk_level: "High"
+    cve_info: "Remote access to router is high risk"
+    
+  - name: "Server with Database"
+    description: "Server with database port exposed"
+    conditions:
+      device_type: ["server"]
+      ports: [3306, 5432, 27017, 6379]
+    risk_level: "High"
+    cve_info: "Database exposure on server is high risk"

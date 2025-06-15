@@ -4,45 +4,39 @@ Signature loading and management
 
 import os
 import yaml
-from typing import List, Dict, Any
 from rich.console import Console
 
-from ..config.settings import settings
+from .settings import MAIN_COLOR, SIGNATURES_PATH
 
 console = Console()
 
 
-class SignatureLoader:
-    """Load and manage device signatures"""
+def load_signatures(filename=None):
+    """Load signatures from YAML file"""
+    if filename is None:
+        filename = SIGNATURES_PATH
     
-    def __init__(self, filename: str = None):
-        self.filename = filename or settings.SIGNATURES_PATH
-        self.signatures = []
-        self.load_signatures()
+    if not os.path.exists(filename):
+        console.print(f":x: [bold red]File not found:[/bold red] {filename}", style=MAIN_COLOR)
+        return []
     
-    def load_signatures(self) -> List[Dict[str, Any]]:
-        """Load signatures from YAML file"""
-        if not os.path.exists(self.filename):
-            console.print(f"[!] Файла {self.filename} не существует", style=settings.MAIN_COLOR)
-            return []
-        
-        try:
-            with open(self.filename, 'r', encoding='utf-8') as f:
-                data = yaml.safe_load(f)
-                self.signatures = data.get('signatures', [])
-                console.print(f"[+] Загружено {len(self.signatures)} сигнатур", style=settings.MAIN_COLOR)
-                return self.signatures
-        except yaml.YAMLError as e:
-            console.print(f"Ошибка при парсинга YAML: {e}", style=settings.MAIN_COLOR)
-            return []
-        except Exception as e:
-            console.print(f"Ошибка при загрузке сигнатур: {e}", style=settings.MAIN_COLOR)
-            return []
-    
-    def get_signatures(self) -> List[Dict[str, Any]]:
-        """Get loaded signatures"""
-        return self.signatures
-    
-    def reload_signatures(self) -> List[Dict[str, Any]]:
-        """Reload signatures from file"""
-        return self.load_signatures() 
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            data = yaml.safe_load(f)
+            signatures = data.get('signatures', [])
+            console.print(f":bookmark_tabs: [bold green]{len(signatures)} signatures loaded[/bold green]", style=MAIN_COLOR)
+            return signatures
+    except yaml.YAMLError as e:
+        console.print(f":x: [bold red]YAML parsing error:[/bold red] {e}", style=MAIN_COLOR)
+        return []
+    except Exception as e:
+        console.print(f":x: [bold red]Error loading signatures:[/bold red] {e}", style=MAIN_COLOR)
+        return []
+
+def get_signatures(signatures):
+    """Get loaded signatures"""
+    return signatures
+
+def reload_signatures(filename=None):
+    """Reload signatures from file"""
+    return load_signatures(filename) 

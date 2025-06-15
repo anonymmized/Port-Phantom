@@ -3,48 +3,46 @@ Port scanning functionality
 """
 
 import subprocess
-from typing import List
 from rich.console import Console
 
-from ..config.settings import settings
+from ..config.settings import MAIN_COLOR, SCAN_PORTS
 
 console = Console()
 
 
-class PortScanner:
-    """Port scanning and detection"""
+def check_ports(ip, ports=None):
+    """Scan specific ports on a host"""
+    open_ports = []
     
-    @staticmethod
-    def check_ports(ip: str) -> List[str]:
-        """Scan specific ports on a host"""
-        open_ports = []
-        
-        try:
-            ports_str = ",".join(map(str, settings.SCAN_PORTS))
-            result = subprocess.run([
-                "nmap", "-p", ports_str, ip
-            ], capture_output=True, text=True)
-            
-            for line in result.stdout.splitlines():
-                if "open" in line:
-                    parts = line.split()
-                    if parts:
-                        port = parts[0].split("/")[0]
-                        open_ports.append(port)
-            
-            return open_ports
-            
-        except Exception as e:
-            console.print(f"[!] Ошибка при сканировании портов {ip}: {e}", style=settings.MAIN_COLOR)
-            return []
+    if ports is None:
+        ports = SCAN_PORTS
     
-    @staticmethod
-    def get_http_headers(ip: str) -> dict:
-        """Get HTTP headers from a host"""
-        import requests
+    try:
+        ports_str = ",".join(map(str, ports))
+        result = subprocess.run([
+            "nmap", "-p", ports_str, ip
+        ], capture_output=True, text=True)
         
-        try:
-            response = requests.get(f"http://{ip}", timeout=2)
-            return response.headers
-        except Exception:
-            return {} 
+        for line in result.stdout.splitlines():
+            if "open" in line:
+                parts = line.split()
+                if parts:
+                    port = parts[0].split("/")[0]
+                    open_ports.append(port)
+        
+        return open_ports
+        
+    except Exception as e:
+        console.print(f":x: [bold red]Error scanning ports for {ip}:[/bold red] {e}", style=MAIN_COLOR)
+        return []
+
+
+def get_http_headers(ip):
+    """Get HTTP headers from a host"""
+    import requests
+    
+    try:
+        response = requests.get(f"http://{ip}", timeout=2)
+        return response.headers
+    except Exception:
+        return {} 

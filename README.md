@@ -1,68 +1,28 @@
-# Port-Phantom v1.0
+# Port-Phantom - Network Security Scanner
 
-Network Security Scanner for discovering and monitoring devices on local networks.
+Port-Phantom is a powerful tool for scanning and monitoring local networks with device discovery, classification, and security risk assessment capabilities.
 
-## Features
+## 🚀 Features
 
-- Scans local networks to discover devices
-- Identifies devices by MAC address and manufacturer
-- Checks open ports and classifies device types
-- Calculates risk levels based on signatures and port configurations
-- Compares current scan with previous scans to detect changes
-- Saves results in JSON and CSV formats
-- Supports multiple subnets and historical data tracking
-- Telegram integration for notifications
+- **Automatic subnet detection** - automatically determines local subnet
+- **Device scanning** - finds active devices on the network
+- **Manufacturer identification** - identifies devices by MAC addresses
+- **Port scanning** - checks open ports on devices
+- **Device classification** - determines device type by ports and manufacturer
+- **Risk assessment** - calculates risk level based on signatures and port configuration
+- **Scan comparison** - compares current scan with previous scans
+- **Result export** - saves results in JSON and CSV formats
+- **Telegram notifications** - sends results via Telegram
+- **CLI interface** - convenient command-line interface with multiple options
+- **Real-time monitoring** - continuous network monitoring capabilities
+- **Custom signatures** - user-defined device signatures and patterns
+- **Historical analysis** - track network changes over time
 
-## Project Structure
-
-```
-Port-Phantom/
-├── main.py                 # Main application entry point
-├── requirements.txt        # Python dependencies
-├── README.md              # This file
-├── src/                   # Source code
-│   ├── __init__.py
-│   ├── config/           # Configuration modules
-│   │   ├── __init__.py
-│   │   ├── settings.py   # Application settings
-│   │   └── signature_loader.py
-│   ├── core/             # Core functionality
-│   │   ├── __init__.py
-│   │   ├── device_processor.py
-│   │   └── risk_assessor.py
-│   ├── scanners/         # Network scanning
-│   │   ├── __init__.py
-│   │   ├── network_scanner.py
-│   │   ├── port_scanner.py
-│   │   └── mac_scanner.py
-│   ├── classifiers/      # Device classification
-│   │   ├── __init__.py
-│   │   ├── device_classifier.py
-│   │   └── signature_matcher.py
-│   ├── reports/          # Report generation
-│   │   ├── __init__.py
-│   │   ├── report_generator.py
-│   │   └── scan_comparator.py
-│   └── utils/            # Utilities
-│       ├── __init__.py
-│       ├── banner.py
-│       ├── telegram_sender.py
-│       └── oui_loader.py
-├── config/               # Configuration files
-│   └── signatures.yaml   # Device signatures
-├── data/                 # Data files
-│   └── oui.txt          # OUI database
-├── history/              # Scan history (auto-created)
-├── exportable_reports/   # Reports for Telegram (auto-created)
-├── tests/                # Test files
-└── docs/                 # Documentation
-```
-
-## Installation
+## 📦 Installation
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/Port-Phantom.git
 cd Port-Phantom
 ```
 
@@ -71,99 +31,187 @@ cd Port-Phantom
 pip install -r requirements.txt
 ```
 
-3. Install nmap (required for network scanning):
-   - **macOS**: `brew install nmap`
-   - **Ubuntu/Debian**: `sudo apt-get install nmap`
-   - **CentOS/RHEL**: `sudo yum install nmap`
-
-## Usage
-
-Run the main scanner:
+3. Download OUI database (optional):
 ```bash
-python main.py
+python3 download_db.py
 ```
 
-The tool will:
-1. Automatically detect your local subnet
-2. Download OUI database if needed
-3. Scan for active devices
-4. Identify device types and manufacturers
-5. Calculate risk scores
-6. Compare with previous scans
-7. Save results and send via Telegram
+## 🛠 Usage
 
-## Configuration
+### Basic Usage
 
-### Telegram Bot Setup
-
-1. Create a bot via @BotFather on Telegram
-2. Get your bot token and user ID
-3. Update the following variables in `src/config/settings.py`:
-   - `TELEGRAM_BOT_TOKEN`: Your bot token
-   - `AUTHORIZED_USER_ID`: Your Telegram user ID
-
-### Signatures
-
-Edit `config/signatures.yaml` to customize device detection rules and risk assessment.
-
-### Settings
-
-Modify `src/config/settings.py` to adjust:
-- Network scanning parameters
-- Risk assessment rules
-- Device classification rules
-- File paths
-
-## Modules
-
-### Core Modules
-- **DeviceProcessor**: Main device processing logic
-- **RiskAssessor**: Risk calculation and assessment
-
-### Scanners
-- **NetworkScanner**: Network discovery and host scanning
-- **PortScanner**: Port scanning and HTTP header analysis
-- **MACScanner**: MAC address detection and OUI processing
-
-### Classifiers
-- **DeviceClassifier**: Device type classification
-- **SignatureMatcher**: Signature matching and CVE detection
-
-### Reports
-- **ReportGenerator**: Report generation and file management
-- **ScanComparator**: Scan comparison and change detection
-
-### Utils
-- **Banner**: Application banner display
-- **TelegramSender**: Telegram integration
-- **OUILoader**: OUI database management
-
-## Output
-
-Results are saved in:
-- `history/` - Scan history and device reports
-- `exportable_reports/` - Reports sent via Telegram
-
-## Development
-
-### Adding New Features
-
-1. Create new modules in appropriate directories
-2. Update `__init__.py` files with exports
-3. Add imports to `main.py`
-4. Update documentation
-
-### Testing
-
-Run tests (when implemented):
 ```bash
-python -m pytest tests/
+python3 main.py
 ```
 
-## Disclaimer
+### CLI Options
 
-This tool is for educational purposes only. Use responsibly and only on networks you own or have permission to scan.
+#### Network Options
+- `-s, --subnet SUBNET` - specify subnet to scan (default: auto-detect)
+- `--ports PORTS` - comma-separated list of ports to scan
+- `--timeout TIMEOUT` - host timeout in milliseconds (default: 50)
 
-## License
+#### Output Options
+- `--export {json,csv,both}` - export results in specified format
+- `--output-dir DIR` - directory to save reports (default: history)
+- `--no-save` - do not save scan results to files
 
-© 2025 Port-Phantom Team
+#### Feature Toggles
+- `--no-telegram` - disable Telegram notifications
+- `--no-signatures` - skip signature matching
+- `--no-comparison` - skip comparison with previous scans
+- `--compare-only` - only compare with previous scan, do not scan network
+
+#### Display Options
+- `-v, --verbose` - enable verbose output
+- `--no-banner` - do not display banner
+- `--quiet` - minimal output (errors only)
+
+#### Advanced Options
+- `--oui-file FILE` - path to custom OUI database file
+- `--signatures-file FILE` - path to custom signatures file
+- `--telegram-user TELEGRAM_USER` - custom Telegram user ID for notifications
+
+### Usage Examples
+
+```bash
+# Scan with default settings
+python3 main.py
+
+# Scan specific subnet
+python3 main.py -s 192.168.1.0/24
+
+# Disable Telegram notifications
+python3 main.py --no-telegram
+
+# Export results in CSV
+python3 main.py --export csv
+
+# Only compare with previous scan
+python3 main.py --compare-only
+
+# Verbose output
+python3 main.py --verbose
+
+# Scan only specific ports
+python3 main.py --ports 22,80,443
+
+# Minimal output without banner
+python3 main.py --no-banner --quiet
+
+# Export in both formats
+python3 main.py --export both
+
+# Custom OUI database
+python3 main.py --oui-file /path/to/custom/oui.txt
+```
+
+## 📁 Project Structure
+
+```
+Port-Phantom/
+├── main.py                 # Main entry point with CLI
+├── requirements.txt        # Python dependencies
+├── README.md              # Documentation
+├── download_db.py         # OUI database download script
+├── src/                   # Source code
+│   ├── config/           # Configuration
+│   │   ├── settings.py   # Application settings
+│   │   └── signature_loader.py  # Signature loading
+│   ├── scanners/         # Scanners
+│   │   ├── network_scanner.py   # Network scanning
+│   │   ├── port_scanner.py      # Port scanning
+│   │   └── mac_scanner.py       # MAC scanning
+│   ├── classifiers/      # Classifiers
+│   │   ├── device_classifier.py # Device classification
+│   │   └── signature_matcher.py # Signature matching
+│   ├── core/            # Core logic
+│   │   ├── device_processor.py  # Device processing
+│   │   └── risk_assessor.py     # Risk assessment
+│   ├── reports/         # Reports
+│   │   ├── report_generator.py  # Report generation
+│   │   └── scan_comparator.py   # Scan comparison
+│   └── utils/           # Utilities
+│       ├── banner.py           # Banner display
+│       └── telegram_sender.py  # Telegram sending
+├── config/              # Configuration files
+│   └── signatures.yaml  # Device signatures
+├── data/               # Data
+│   └── oui.txt         # OUI database (optional)
+├── history/            # Scan history
+└── exportable_reports/ # Exportable reports
+```
+
+## ⚙️ Configuration
+
+### Telegram Settings
+
+Edit `src/config/settings.py`:
+
+```python
+TELEGRAM_BOT_TOKEN = "your_bot_token_here"
+AUTHORIZED_USER_ID = your_user_id_here
+```
+
+### Custom Signatures
+
+Create `config/signatures.yaml`:
+
+```yaml
+signatures:
+  - name: "Router"
+    description: "Network router device"
+    conditions:
+      manufacturer: ["TP-Link", "Cisco", "ASUS"]
+      ports: [80, 443]
+    cve_info: "Router-specific vulnerabilities"
+```
+
+## 📊 Output Formats
+
+### JSON Format
+```json
+{
+  "ip": "192.168.1.1",
+  "mac": "AA:BB:CC:DD:EE:FF",
+  "manufacturer": "TP-Link",
+  "open_ports": ["80", "443"],
+  "device_type": ["router"],
+  "score": 5,
+  "level": "Medium"
+}
+```
+
+### CSV Format
+```csv
+ip,mac,manufacturer,open_ports,device_type,score,level
+192.168.1.1,AA:BB:CC:DD:EE:FF,TP-Link,"80, 443",router,5,Medium
+```
+
+## 🔧 Requirements
+
+- Python 3.7+
+- nmap
+- requests
+- rich
+- pyyaml
+
+## 📝 License
+
+This project is for educational purposes only. Use responsibly.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Create a Pull Request
+
+## 📞 Contact
+
+- GitHub: https://github.com/yourusername/Port-Phantom
+- Email: yourname@example.com
+
+---
+
+**Disclaimer**: This tool is for educational purposes only. Use responsibly and only on networks you own or have permission to test.

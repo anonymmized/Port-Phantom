@@ -1,8 +1,12 @@
 """
-Configuration modules
+Configuration module
 """
 
-from .settings import Settings
-from .signature_loader import SignatureLoader
+from .settings import *
+from .signature_loader import load_signatures, get_signatures, reload_signatures
 
-__all__ = ['Settings', 'SignatureLoader'] 
+__all__ = [
+    'load_signatures',
+    'get_signatures', 
+    'reload_signatures'
+] 

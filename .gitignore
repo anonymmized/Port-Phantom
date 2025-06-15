@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+history/
+exportable_reports/
+data/oui.txt
+*.log
+.env
+config/local_settings.py
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Scan results
+scan_*.json
+*_device.csv
+*_device.json
+
+# Telegram bot token (if stored in file)
+telegram_token.txt
+bot_config.json
+
+# Network captures
+*.pcap
+*.cap
+
+# Test files
+test_*.py
+*_test.py
+tests/__pycache__/
+
+# Documentation builds
+docs/_build/
+docs/build/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/ 

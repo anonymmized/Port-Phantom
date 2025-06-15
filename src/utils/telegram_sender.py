@@ -1,43 +1,57 @@
 """
-Telegram integration for notifications
+Telegram notification functionality
 """
 
-import os
-import telebot
+import requests
 from rich.console import Console
 
-from ..config.settings import settings
+from ..config.settings import TELEGRAM_BOT_TOKEN, AUTHORIZED_USER_ID, MAIN_COLOR
 
 console = Console()
 
 
-class TelegramSender:
-    """Send reports via Telegram"""
+def send_telegram_message(message, user_id=None):
+    """Send message to Telegram"""
+    if user_id is None:
+        user_id = AUTHORIZED_USER_ID
     
-    def __init__(self):
-        self.bot = telebot.TeleBot(settings.TELEGRAM_BOT_TOKEN)
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    data = {
+        "chat_id": user_id,
+        "text": message,
+        "parse_mode": "HTML"
+    }
     
-    def send_file(self, file_path: str, chat_id: str) -> bool:
-        """Send file via Telegram"""
-        if not os.path.exists(file_path):
-            console.print(f"[!] Файл {file_path} не найден", style=settings.MAIN_COLOR)
+    try:
+        response = requests.post(url, data=data)
+        if response.status_code == 200:
+            console.print(":white_check_mark: [bold green]Notification sent to Telegram[/bold green]", style=MAIN_COLOR)
+            return True
+        else:
+            console.print(f":x: [bold red]Telegram send error:[/bold red] {response.status_code}", style=MAIN_COLOR)
             return False
+    except Exception as e:
+        console.print(f":x: [bold red]Telegram send error:[/bold red] {e}", style=MAIN_COLOR)
+        return False
 
-        try:
-            with open(file_path, 'rb') as f:
-                self.bot.send_document(chat_id, f)
-            console.print("[+] Файл успешно отправлен через Telegram", style=settings.MAIN_COLOR)
-            return True
-        except Exception as e:
-            console.print(f"[!] Ошибка при отправке через Telegram: {e}", style=settings.MAIN_COLOR)
-            return False
+
+def send_scan_results(devices, user_id=None):
+    """Send scan results to Telegram"""
+    if not devices:
+        return False
     
-    def send_message(self, message: str, chat_id: str) -> bool:
-        """Send text message via Telegram"""
-        try:
-            self.bot.send_message(chat_id, message)
-            console.print("[+] Сообщение отправлено через Telegram", style=settings.MAIN_COLOR)
-            return True
-        except Exception as e:
-            console.print(f"[!] Ошибка при отправке сообщения: {e}", style=settings.MAIN_COLOR)
-            return False 
+    message = "🔍 <b>Network scan results</b>\n\n"
+    
+    for device in devices:
+        ip = device.get('ip', 'Unknown')
+        manufacturer = device.get('manufacturer', 'Unknown')
+        score = device.get('score', 0)
+        level = device.get('level', 'None')
+        ports = device.get('open ports', [])
+        
+        message += f"📱 <b>{ip}</b>\n"
+        message += f"🏭 Manufacturer: {manufacturer}\n"
+        message += f"⚠️ Risk: {level} ({score})\n"
+        message += f"🔌 Ports: {', '.join(map(str, ports)) if ports else 'None'}\n\n"
+    
+    return send_telegram_message(message, user_id) 
