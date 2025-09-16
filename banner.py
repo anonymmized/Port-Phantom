@@ -51,8 +51,8 @@ def banner_print():
     contact_info.add_column("Contact", style="bold #1E90FF")
     contact_info.add_column("Details", style="#6495ED")
     
-    contact_info.add_row("🌐 GitHub", "https://github.com/yourusername/Port-Phantom")
-    contact_info.add_row("📧 Email", "yourname@example.com")
+    contact_info.add_row("🌐 GitHub", "https://github.com/anonymmized/Port-Phantom")
+    contact_info.add_row("📧 Email", "insanyyi@proton.me")
     
     # Disclaimer
     disclaimer = Text("⚠️  This tool is for educational purposes only. Use responsibly.", style="bold #FF6B6B")
